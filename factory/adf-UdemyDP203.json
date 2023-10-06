@@ -1,0 +1,9 @@
+{
+	"name": "adf-UdemyDP203",
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "36d59267-905e-4bca-801b-063798ad5b27",
+		"tenantId": "e5bc154a-c8ec-4634-bddb-b6d7d2bb2663"
+	}
+}
