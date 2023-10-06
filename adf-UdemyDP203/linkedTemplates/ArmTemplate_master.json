@@ -1,0 +1,71 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "adf-UdemyDP203"
+		},
+		"db_UdemyDP203_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'db_UdemyDP203'",
+			"defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=dbs-udemydp203.database.windows.net;Initial Catalog=db_UdemyDP203;User ID=sqladmin"
+		},
+		"udemystracc_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'udemystracc'"
+		},
+		"AzureKeyVault_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "https://kv-UdemyDP203.vault.azure.net/"
+		},
+		"udemystracc_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://udemystracc.dfs.core.windows.net/"
+		},
+		"containerUri": {
+			"type": "string",
+			"metadata": "URI to storage account containing linked ARM templates"
+		},
+		"containerSasToken": {
+			"type": "string",
+			"metadata": "Sas token to storage account containing linked ARM templates"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "adf-UdemyDP203_ArmTemplate_0",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_0.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"udemystracc_accountKey": {
+						"value": "[parameters('udemystracc_accountKey')]"
+					},
+					"db_UdemyDP203_connectionString": {
+						"value": "[parameters('db_UdemyDP203_connectionString')]"
+					},
+					"AzureKeyVault_properties_typeProperties_baseUrl": {
+						"value": "[parameters('AzureKeyVault_properties_typeProperties_baseUrl')]"
+					},
+					"udemystracc_properties_typeProperties_url": {
+						"value": "[parameters('udemystracc_properties_typeProperties_url')]"
+					}
+				}
+			},
+			"dependsOn": []
+		}
+	]
+}
