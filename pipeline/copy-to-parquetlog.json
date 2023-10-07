@@ -189,7 +189,14 @@
 			{
 				"name": "CopyDatatoDB",
 				"type": "Copy",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "CopydatatoParquet",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,
@@ -306,6 +313,11 @@
 								}
 							},
 							{
+								"source": {
+									"name": "Eventinitiatedby",
+									"type": "String",
+									"physicalType": "UTF8"
+								},
 								"sink": {
 									"name": "Event initiated by",
 									"type": "String",
@@ -313,6 +325,11 @@
 								}
 							},
 							{
+								"source": {
+									"name": "Resourcetype",
+									"type": "String",
+									"physicalType": "UTF8"
+								},
 								"sink": {
 									"name": "Resource type",
 									"type": "String",
@@ -320,6 +337,11 @@
 								}
 							},
 							{
+								"source": {
+									"name": "Resourcegroup",
+									"type": "String",
+									"physicalType": "UTF8"
+								},
 								"sink": {
 									"name": "Resource group",
 									"type": "String",
