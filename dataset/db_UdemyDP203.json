@@ -9,11 +9,11 @@
 		"type": "AzureSqlTable",
 		"schema": [
 			{
-				"name": "Correlation id",
+				"name": "Correlationid",
 				"type": "varchar"
 			},
 			{
-				"name": "Operation name",
+				"name": "Operationname",
 				"type": "varchar"
 			},
 			{
@@ -21,7 +21,7 @@
 				"type": "varchar"
 			},
 			{
-				"name": "Event category",
+				"name": "Eventcategory",
 				"type": "varchar"
 			},
 			{
@@ -39,19 +39,23 @@
 				"type": "varchar"
 			},
 			{
-				"name": "Event initiated by",
+				"name": "Eventinitiatedby",
 				"type": "varchar"
 			},
 			{
-				"name": "Resource type",
+				"name": "Resourcetype",
 				"type": "varchar"
 			},
 			{
-				"name": "Resource group",
+				"name": "Resourcegroup",
 				"type": "varchar"
 			},
 			{
 				"name": "Resource",
+				"type": "varchar"
+			},
+			{
+				"name": "FilePath",
 				"type": "varchar"
 			}
 		],

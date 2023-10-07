@@ -208,6 +208,12 @@
 				"typeProperties": {
 					"source": {
 						"type": "ParquetSource",
+						"additionalColumns": [
+							{
+								"name": "FilePath",
+								"value": "$$FILEPATH"
+							}
+						],
 						"storeSettings": {
 							"type": "AzureBlobFSReadSettings",
 							"recursive": true,
