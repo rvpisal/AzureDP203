@@ -475,7 +475,7 @@
 											"physicalType": "UTF8"
 										},
 										"sink": {
-											"name": "Correlation id",
+											"name": "Correlationid",
 											"type": "String",
 											"physicalType": "varchar"
 										}
@@ -487,7 +487,7 @@
 											"physicalType": "UTF8"
 										},
 										"sink": {
-											"name": "Operation name",
+											"name": "Operationname",
 											"type": "String",
 											"physicalType": "varchar"
 										}
@@ -511,7 +511,7 @@
 											"physicalType": "UTF8"
 										},
 										"sink": {
-											"name": "Event category",
+											"name": "Eventcategory",
 											"type": "String",
 											"physicalType": "varchar"
 										}
@@ -536,8 +536,8 @@
 										},
 										"sink": {
 											"name": "Time",
-											"type": "DateTime",
-											"physicalType": "datetime"
+											"type": "String",
+											"physicalType": "varchar"
 										}
 									},
 									{
@@ -559,7 +559,7 @@
 											"physicalType": "UTF8"
 										},
 										"sink": {
-											"name": "Event initiated by",
+											"name": "Eventinitiatedby",
 											"type": "String",
 											"physicalType": "varchar"
 										}
@@ -571,7 +571,7 @@
 											"physicalType": "UTF8"
 										},
 										"sink": {
-											"name": "Resource type",
+											"name": "Resourcetype",
 											"type": "String",
 											"physicalType": "varchar"
 										}
@@ -583,7 +583,7 @@
 											"physicalType": "UTF8"
 										},
 										"sink": {
-											"name": "Resource group",
+											"name": "Resourcegroup",
 											"type": "String",
 											"physicalType": "varchar"
 										}
