@@ -57,7 +57,7 @@
 		],
 		"typeProperties": {
 			"schema": "dbo",
-			"table": "CSVlogdata"
+			"table": "logdata_parquet"
 		}
 	}
 }
