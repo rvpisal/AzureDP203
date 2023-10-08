@@ -6,7 +6,7 @@
 			"sources": [
 				{
 					"dataset": {
-						"referenceName": "tbl_Customer",
+						"referenceName": "adls_Customer1CSV",
 						"type": "DatasetReference"
 					},
 					"name": "CustomerTbl"
@@ -31,8 +31,8 @@
 			],
 			"scriptLines": [
 				"source(output(",
-				"          CustomerID as integer,",
-				"          NameStyle as boolean,",
+				"          CustomerID as string,",
+				"          NameStyle as string,",
 				"          Title as string,",
 				"          FirstName as string,",
 				"          MiddleName as string,",
@@ -45,12 +45,11 @@
 				"          PasswordHash as string,",
 				"          PasswordSalt as string,",
 				"          rowguid as string,",
-				"          ModifiedDate as timestamp",
+				"          ModifiedDate as string",
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     isolationLevel: 'READ_UNCOMMITTED',",
-				"     format: 'table') ~> CustomerTbl",
+				"     ignoreNoFilesFound: false) ~> CustomerTbl",
 				"CustomerTbl select(mapColumn(",
 				"          CustomerID,",
 				"          CompanyName,",
