@@ -951,6 +951,12 @@
 						"type": "money",
 						"precision": 19,
 						"scale": 4
+					},
+					{
+						"name": "TotalAmount",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
 					}
 				],
 				"typeProperties": {
@@ -1252,6 +1258,12 @@
 					"transformations": [
 						{
 							"name": "SalesOrderHeaderJoinSalesOrderDetail"
+						},
+						{
+							"name": "selectColumns"
+						},
+						{
+							"name": "DerivedTotalAmount"
 						}
 					],
 					"scriptLines": [
@@ -1303,7 +1315,19 @@
 						"     matchType:'exact',",
 						"     ignoreSpaces: false,",
 						"     broadcast: 'auto')~> SalesOrderHeaderJoinSalesOrderDetail",
-						"SalesOrderHeaderJoinSalesOrderDetail sink(allowSchemaDrift: true,",
+						"SalesOrderHeaderJoinSalesOrderDetail select(mapColumn(",
+						"          SalesOrderID = SalesOrderDetail@SalesOrderID,",
+						"          OrderQty,",
+						"          ProductID,",
+						"          UnitPrice,",
+						"          CustomerID,",
+						"          TaxAmt,",
+						"          OrderDate",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selectColumns",
+						"selectColumns derive(TotalAmount = multiply(OrderQty,UnitPrice)) ~> DerivedTotalAmount",
+						"DerivedTotalAmount sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
 						"          ProductID as integer,",
@@ -1312,7 +1336,8 @@
 						"          OrderQty as integer,",
 						"          UnitPrice as decimal(19,4),",
 						"          OrderDate as timestamp,",
-						"          TaxAmt as decimal(19,4)",
+						"          TaxAmt as decimal(19,4),",
+						"          TotalAmount as decimal(19,4)",
 						"     ),",
 						"     deletable:false,",
 						"     insertable:true,",
@@ -1324,12 +1349,13 @@
 						"     errorHandlingOption: 'stopOnFirstError',",
 						"     mapColumn(",
 						"          ProductID,",
-						"          SalesOrderID = SalesOrderHeader@SalesOrderID,",
+						"          SalesOrderID,",
 						"          CustomerID,",
 						"          OrderQty,",
 						"          UnitPrice,",
 						"          OrderDate,",
-						"          TaxAmt",
+						"          TaxAmt,",
+						"          TotalAmount",
 						"     )) ~> FactSales"
 					]
 				}
