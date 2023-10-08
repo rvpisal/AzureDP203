@@ -903,6 +903,131 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/tbl_Customer')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "db_UdemyDP203",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "CustomerID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "NameStyle",
+						"type": "bit"
+					},
+					{
+						"name": "Title",
+						"type": "nvarchar"
+					},
+					{
+						"name": "FirstName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "MiddleName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "LastName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Suffix",
+						"type": "nvarchar"
+					},
+					{
+						"name": "CompanyName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "SalesPerson",
+						"type": "nvarchar"
+					},
+					{
+						"name": "EmailAddress",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Phone",
+						"type": "nvarchar"
+					},
+					{
+						"name": "PasswordHash",
+						"type": "varchar"
+					},
+					{
+						"name": "PasswordSalt",
+						"type": "varchar"
+					},
+					{
+						"name": "rowguid",
+						"type": "uniqueidentifier"
+					},
+					{
+						"name": "ModifiedDate",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					}
+				],
+				"typeProperties": {
+					"schema": "SalesLT",
+					"table": "Customer"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/db_UdemyDP203')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/tbl_DimCustomer')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "db_UdemyDP203",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "CustomeSK",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "CustomerID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "CompanyName",
+						"type": "varchar"
+					},
+					{
+						"name": "SalesPerson",
+						"type": "varchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "DimCustomer"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/db_UdemyDP203')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/tbl_FactSales')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -1364,6 +1489,101 @@
 				"[concat(variables('factoryId'), '/datasets/tbl_SalesOrderDetail')]",
 				"[concat(variables('factoryId'), '/datasets/tbl_SalesOrderHeader')]",
 				"[concat(variables('factoryId'), '/datasets/tbl_FactSales')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dataflow1')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "tbl_Customer",
+								"type": "DatasetReference"
+							},
+							"name": "CustomerTbl"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "tbl_DimCustomer",
+								"type": "DatasetReference"
+							},
+							"name": "DimCustomer"
+						}
+					],
+					"transformations": [
+						{
+							"name": "selectCustomerCols"
+						},
+						{
+							"name": "CustomerSK"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          CustomerID as integer,",
+						"          NameStyle as boolean,",
+						"          Title as string,",
+						"          FirstName as string,",
+						"          MiddleName as string,",
+						"          LastName as string,",
+						"          Suffix as string,",
+						"          CompanyName as string,",
+						"          SalesPerson as string,",
+						"          EmailAddress as string,",
+						"          Phone as string,",
+						"          PasswordHash as string,",
+						"          PasswordSalt as string,",
+						"          rowguid as string,",
+						"          ModifiedDate as timestamp",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> CustomerTbl",
+						"CustomerTbl select(mapColumn(",
+						"          CustomerID,",
+						"          CompanyName,",
+						"          SalesPerson",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selectCustomerCols",
+						"selectCustomerCols keyGenerate(output(CustomeSK as long),",
+						"     startAt: 1L,",
+						"     stepValue: 1L) ~> CustomerSK",
+						"CustomerSK sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          CustomeSK as integer,",
+						"          CustomerID as integer,",
+						"          CompanyName as string,",
+						"          SalesPerson as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          CustomeSK,",
+						"          CustomerID,",
+						"          CompanyName,",
+						"          SalesPerson",
+						"     )) ~> DimCustomer"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/tbl_Customer')]",
+				"[concat(variables('factoryId'), '/datasets/tbl_DimCustomer')]"
 			]
 		}
 	]
