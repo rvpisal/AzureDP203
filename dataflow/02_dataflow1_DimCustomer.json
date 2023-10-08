@@ -10,6 +10,13 @@
 						"type": "DatasetReference"
 					},
 					"name": "CustomerTbl"
+				},
+				{
+					"dataset": {
+						"referenceName": "tbl_DimCustomer",
+						"type": "DatasetReference"
+					},
+					"name": "GetMaxCustomerSK"
 				}
 			],
 			"sinks": [
@@ -19,6 +26,9 @@
 						"type": "DatasetReference"
 					},
 					"name": "DimCustomer"
+				},
+				{
+					"name": "CustomerSKSink"
 				}
 			],
 			"transformations": [
@@ -27,6 +37,9 @@
 				},
 				{
 					"name": "CustomerSK"
+				},
+				{
+					"name": "CustomerSKUpdated"
 				}
 			],
 			"scriptLines": [
@@ -50,6 +63,14 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false) ~> CustomerTbl",
+				"source(output(",
+				"          CustomeSK as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT MAX([CustomeSK]) as CustomeSK FROM [dbo].[DimCustomer]',",
+				"     format: 'query') ~> GetMaxCustomerSK",
 				"CustomerTbl select(mapColumn(",
 				"          CustomerID,",
 				"          CompanyName,",
@@ -60,7 +81,8 @@
 				"selectCustomerCols keyGenerate(output(CustomeSK as long),",
 				"     startAt: 1L,",
 				"     stepValue: 1L) ~> CustomerSK",
-				"CustomerSK sink(allowSchemaDrift: true,",
+				"CustomerSK derive(CustomeSK = CustomeSK + CustomerSKSink#outputs()[1].CustomeSK) ~> CustomerSKUpdated",
+				"CustomerSKUpdated sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
 				"          CustomeSK as integer,",
@@ -81,7 +103,17 @@
 				"          CustomerID,",
 				"          CompanyName,",
 				"          SalesPerson",
-				"     )) ~> DimCustomer"
+				"     )) ~> DimCustomer",
+				"GetMaxCustomerSK sink(validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     store: 'cache',",
+				"     format: 'inline',",
+				"     output: false,",
+				"     saveOrder: 1,",
+				"     mapColumn(",
+				"          CustomeSK",
+				"     )) ~> CustomerSKSink"
 			]
 		}
 	}
