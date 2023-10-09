@@ -142,7 +142,7 @@
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobFSLocation",
-						"fileName": "customer.json",
+						"fileName": "customer_updated.json",
 						"fileSystem": "json"
 					}
 				},
@@ -162,6 +162,17 @@
 							"type": "array",
 							"items": {
 								"type": "string"
+							}
+						},
+						"details": {
+							"type": "object",
+							"properties": {
+								"mobile": {
+									"type": "string"
+								},
+								"city": {
+									"type": "string"
+								}
 							}
 						}
 					}
@@ -541,6 +552,14 @@
 					},
 					{
 						"name": "Courses",
+						"type": "varchar"
+					},
+					{
+						"name": "Mobile",
+						"type": "varchar"
+					},
+					{
+						"name": "City",
 						"type": "varchar"
 					}
 				],
@@ -1800,7 +1819,8 @@
 						"          customerid as integer,",
 						"          customername as string,",
 						"          registered as boolean,",
-						"          courses as string[]",
+						"          courses as string[],",
+						"          details as (mobile as string, city as string)",
 						"     ),",
 						"     allowSchemaDrift: true,",
 						"     validateSchema: false,",
@@ -1808,10 +1828,12 @@
 						"     documentForm: 'arrayOfDocuments') ~> Customer",
 						"Customer foldDown(unroll(courses, courses),",
 						"     mapColumn(",
+						"          courses,",
 						"          customerid,",
 						"          customername,",
 						"          registered,",
-						"          courses",
+						"          mobile = details.mobile,",
+						"          city = details.city",
 						"     ),",
 						"     skipDuplicateMapInputs: false,",
 						"     skipDuplicateMapOutputs: false) ~> flattenCoursesArray",
@@ -1821,7 +1843,9 @@
 						"          CustomerID as integer,",
 						"          CustomerName as string,",
 						"          Registered as boolean,",
-						"          Courses as string",
+						"          Courses as string,",
+						"          Mobile as string,",
+						"          City as string",
 						"     ),",
 						"     deletable:false,",
 						"     insertable:true,",
@@ -1835,7 +1859,9 @@
 						"          CustomerID = customerid,",
 						"          CustomerName = customername,",
 						"          Registered = registered,",
-						"          Courses = courses",
+						"          Courses = courses,",
+						"          Mobile = mobile,",
+						"          City = city",
 						"     )) ~> CustomerCourse"
 					]
 				}
