@@ -55,6 +55,7 @@
 								"datasetParameters": {
 									"CustomerTbl": {},
 									"GetMaxCustomerSK": {},
+									"DimCustomerLatest": {},
 									"DimCustomer": {},
 									"CustomerSKSink": {}
 								}
@@ -1650,6 +1651,13 @@
 								"type": "DatasetReference"
 							},
 							"name": "GetMaxCustomerSK"
+						},
+						{
+							"dataset": {
+								"referenceName": "tbl_DimCustomer",
+								"type": "DatasetReference"
+							},
+							"name": "DimCustomerLatest"
 						}
 					],
 					"sinks": [
@@ -1673,6 +1681,9 @@
 						},
 						{
 							"name": "CustomerSKUpdated"
+						},
+						{
+							"name": "DowsCustomerExists"
 						}
 					],
 					"scriptLines": [
@@ -1704,7 +1715,17 @@
 						"     isolationLevel: 'READ_UNCOMMITTED',",
 						"     query: 'SELECT MAX([CustomeSK]) as CustomeSK FROM [dbo].[DimCustomer]',",
 						"     format: 'query') ~> GetMaxCustomerSK",
-						"CustomerTbl select(mapColumn(",
+						"source(output(",
+						"          CustomeSK as integer,",
+						"          CustomerID as integer,",
+						"          CompanyName as string,",
+						"          SalesPerson as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> DimCustomerLatest",
+						"DowsCustomerExists select(mapColumn(",
 						"          CustomerID,",
 						"          CompanyName,",
 						"          SalesPerson",
@@ -1715,6 +1736,9 @@
 						"     startAt: 1L,",
 						"     stepValue: 1L) ~> CustomerSK",
 						"CustomerSK derive(CustomeSK = CustomeSK + CustomerSKSink#outputs()[1].CustomeSK) ~> CustomerSKUpdated",
+						"CustomerTbl, DimCustomerLatest exists(toInteger(CustomerTbl@CustomerID) == DimCustomerLatest@CustomerID,",
+						"     negate:true,",
+						"     broadcast: 'auto')~> DowsCustomerExists",
 						"CustomerSKUpdated sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
