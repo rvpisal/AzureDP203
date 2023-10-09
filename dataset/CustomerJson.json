@@ -10,7 +10,7 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"fileName": "customer.json",
+				"fileName": "customer_updated.json",
 				"fileSystem": "json"
 			}
 		},
@@ -30,6 +30,17 @@
 					"type": "array",
 					"items": {
 						"type": "string"
+					}
+				},
+				"details": {
+					"type": "object",
+					"properties": {
+						"mobile": {
+							"type": "string"
+						},
+						"city": {
+							"type": "string"
+						}
 					}
 				}
 			}
