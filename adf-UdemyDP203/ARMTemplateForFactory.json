@@ -807,6 +807,49 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/CustomerJson')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "udemystracc",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "customer.json",
+						"fileSystem": "json"
+					}
+				},
+				"schema": {
+					"type": "object",
+					"properties": {
+						"customerid": {
+							"type": "integer"
+						},
+						"customername": {
+							"type": "string"
+						},
+						"registered": {
+							"type": "boolean"
+						},
+						"courses": {
+							"type": "array",
+							"items": {
+								"type": "string"
+							}
+						}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/udemystracc')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/adls_Customer1CSV')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -1120,6 +1163,45 @@
 				"typeProperties": {
 					"schema": "SalesLT",
 					"table": "Customer"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/db_UdemyDP203')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/tbl_Customercourse')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "db_UdemyDP203",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "CustomerID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "CustomerName",
+						"type": "varchar"
+					},
+					{
+						"name": "Registered",
+						"type": "bit"
+					},
+					{
+						"name": "Courses",
+						"type": "varchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "Customercourse"
 				}
 			},
 			"dependsOn": [
@@ -1778,6 +1860,98 @@
 				"[concat(variables('factoryId'), '/datasets/adls_Customer1CSV')]",
 				"[concat(variables('factoryId'), '/datasets/tbl_DimCustomer')]"
 			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/03_dataflow_ProcessCustomerJsonArray')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "CustomerJson",
+								"type": "DatasetReference"
+							},
+							"name": "Customer"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "tbl_Customercourse",
+								"type": "DatasetReference"
+							},
+							"name": "CustomerCourse"
+						}
+					],
+					"transformations": [
+						{
+							"name": "flattenCoursesArray"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          customerid as integer,",
+						"          customername as string,",
+						"          registered as boolean,",
+						"          courses as string[]",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     documentForm: 'documentPerLine') ~> Customer",
+						"Customer foldDown(unroll(courses, courses),",
+						"     mapColumn(",
+						"          customerid,",
+						"          customername,",
+						"          registered,",
+						"          courses",
+						"     ),",
+						"     skipDuplicateMapInputs: false,",
+						"     skipDuplicateMapOutputs: false) ~> flattenCoursesArray",
+						"flattenCoursesArray sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          CustomerID as integer,",
+						"          CustomerName as string,",
+						"          Registered as boolean,",
+						"          Courses as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          CustomerID = customerid,",
+						"          CustomerName = customername,",
+						"          Registered = registered,",
+						"          Courses = courses",
+						"     )) ~> CustomerCourse"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/CustomerJson')]",
+				"[concat(variables('factoryId'), '/datasets/tbl_Customercourse')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pipeline1')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": []
 		}
 	]
 }
