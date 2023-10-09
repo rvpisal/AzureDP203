@@ -102,7 +102,7 @@
 				"     startAt: 1L,",
 				"     stepValue: 1L) ~> CustomerSK",
 				"CustomerSK derive(CustomeSK = CustomeSK + CustomerSKSink#outputs()[1].CustomeSK) ~> CustomerSKUpdated",
-				"CustomerTbl, DimCustomerLatest exists(ERROR_FUNCTION('toInteger(CustomerTbl@CustomerID) = DimCustomerLatest@CustomerID'),",
+				"CustomerTbl, DimCustomerLatest exists(toInteger(CustomerTbl@CustomerID) == DimCustomerLatest@CustomerID,",
 				"     negate:true,",
 				"     broadcast: 'auto')~> DowsCustomerExists",
 				"CustomerSKUpdated sink(allowSchemaDrift: true,",
