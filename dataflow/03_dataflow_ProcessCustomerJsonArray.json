@@ -36,7 +36,7 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false,",
-				"     documentForm: 'documentPerLine') ~> Customer",
+				"     documentForm: 'arrayOfDocuments') ~> Customer",
 				"Customer foldDown(unroll(courses, courses),",
 				"     mapColumn(",
 				"          customerid,",
