@@ -1,0 +1,6 @@
+{
+	"name": "customVMRuntime",
+	"properties": {
+		"type": "SelfHosted"
+	}
+}
