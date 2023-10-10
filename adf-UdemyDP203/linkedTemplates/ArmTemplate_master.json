@@ -7,6 +7,10 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "adf-UdemyDP203"
 		},
+		"SelfvmServer_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'SelfvmServer'"
+		},
 		"db_UdemyDP203_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'db_UdemyDP203'",
@@ -19,6 +23,14 @@
 		"AzureKeyVault_properties_typeProperties_baseUrl": {
 			"type": "string",
 			"defaultValue": "https://kv-UdemyDP203.vault.azure.net/"
+		},
+		"SelfvmServer_properties_typeProperties_host": {
+			"type": "string",
+			"defaultValue": "D:\\nginx-1.24.0\\logs"
+		},
+		"SelfvmServer_properties_typeProperties_userId": {
+			"type": "string",
+			"defaultValue": "vmadmin"
 		},
 		"udemystracc_properties_typeProperties_url": {
 			"type": "string",
@@ -54,6 +66,9 @@
 					"udemystracc_accountKey": {
 						"value": "[parameters('udemystracc_accountKey')]"
 					},
+					"SelfvmServer_password": {
+						"value": "[parameters('SelfvmServer_password')]"
+					},
 					"db_UdemyDP203_connectionString": {
 						"value": "[parameters('db_UdemyDP203_connectionString')]"
 					},
@@ -62,6 +77,12 @@
 					},
 					"udemystracc_properties_typeProperties_url": {
 						"value": "[parameters('udemystracc_properties_typeProperties_url')]"
+					},
+					"SelfvmServer_properties_typeProperties_host": {
+						"value": "[parameters('SelfvmServer_properties_typeProperties_host')]"
+					},
+					"SelfvmServer_properties_typeProperties_userId": {
+						"value": "[parameters('SelfvmServer_properties_typeProperties_userId')]"
 					}
 				}
 			},

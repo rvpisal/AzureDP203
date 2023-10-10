@@ -7,6 +7,10 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "adf-UdemyDP203"
 		},
+		"SelfvmServer_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'SelfvmServer'"
+		},
 		"db_UdemyDP203_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'db_UdemyDP203'",
@@ -19,6 +23,14 @@
 		"AzureKeyVault_properties_typeProperties_baseUrl": {
 			"type": "string",
 			"defaultValue": "https://kv-UdemyDP203.vault.azure.net/"
+		},
+		"SelfvmServer_properties_typeProperties_host": {
+			"type": "string",
+			"defaultValue": "D:\\nginx-1.24.0\\logs"
+		},
+		"SelfvmServer_properties_typeProperties_userId": {
+			"type": "string",
+			"defaultValue": "vmadmin"
 		},
 		"udemystracc_properties_typeProperties_url": {
 			"type": "string",
@@ -784,6 +796,91 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/niginx-copy-log')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "CopyLogdataFromNginx",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "BinarySource",
+								"storeSettings": {
+									"type": "FileServerReadSettings",
+									"recursive": true
+								},
+								"formatSettings": {
+									"type": "BinaryReadSettings"
+								}
+							},
+							"sink": {
+								"type": "BinarySink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								}
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "AccessLogNginx",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "adls_nginx",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/AccessLogNginx')]",
+				"[concat(variables('factoryId'), '/datasets/adls_nginx')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AccessLogNginx')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "SelfvmServer",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Binary",
+				"typeProperties": {
+					"location": {
+						"type": "FileServerLocation",
+						"fileName": "access.log"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/SelfvmServer')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/CSVtoParquetLog')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -1064,6 +1161,28 @@
 						"type": "String"
 					}
 				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/udemystracc')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/adls_nginx')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "udemystracc",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Binary",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileSystem": "nginx"
+					}
+				}
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/udemystracc')]"
@@ -1595,6 +1714,30 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/SelfvmServer')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "FileServer",
+				"typeProperties": {
+					"host": "[parameters('SelfvmServer_properties_typeProperties_host')]",
+					"userId": "[parameters('SelfvmServer_properties_typeProperties_userId')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('SelfvmServer_password')]"
+					}
+				},
+				"connectVia": {
+					"referenceName": "customVMRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/customVMRuntime')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/db_UdemyDP203')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -1631,6 +1774,16 @@
 						"value": "[parameters('udemystracc_accountKey')]"
 					}
 				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/customVMRuntime')]",
+			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "SelfHosted",
+				"typeProperties": {}
 			},
 			"dependsOn": []
 		},

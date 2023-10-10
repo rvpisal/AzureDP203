@@ -5,6 +5,9 @@
 		"factoryName": {
 			"value": "adf-UdemyDP203"
 		},
+		"SelfvmServer_password": {
+			"value": ""
+		},
 		"db_UdemyDP203_connectionString": {
 			"value": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=dbs-udemydp203.database.windows.net;Initial Catalog=db_UdemyDP203;User ID=sqladmin"
 		},
@@ -13,6 +16,12 @@
 		},
 		"AzureKeyVault_properties_typeProperties_baseUrl": {
 			"value": "https://kv-UdemyDP203.vault.azure.net/"
+		},
+		"SelfvmServer_properties_typeProperties_host": {
+			"value": "D:\\nginx-1.24.0\\logs"
+		},
+		"SelfvmServer_properties_typeProperties_userId": {
+			"value": "vmadmin"
 		},
 		"udemystracc_properties_typeProperties_url": {
 			"value": "https://udemystracc.dfs.core.windows.net/"

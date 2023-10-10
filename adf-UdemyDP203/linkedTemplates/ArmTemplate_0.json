@@ -11,6 +11,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'accountKey' of 'udemystracc'"
 		},
+		"SelfvmServer_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'SelfvmServer'"
+		},
 		"db_UdemyDP203_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'db_UdemyDP203'",
@@ -23,6 +27,14 @@
 		"udemystracc_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://udemystracc.dfs.core.windows.net/"
+		},
+		"SelfvmServer_properties_typeProperties_host": {
+			"type": "string",
+			"defaultValue": "D:\\nginx-1.24.0\\logs"
+		},
+		"SelfvmServer_properties_typeProperties_userId": {
+			"type": "string",
+			"defaultValue": "vmadmin"
 		}
 	},
 	"variables": {
@@ -56,6 +68,16 @@
 						"value": "[parameters('udemystracc_accountKey')]"
 					}
 				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/customVMRuntime')]",
+			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "SelfHosted",
+				"typeProperties": {}
 			},
 			"dependsOn": []
 		},
@@ -346,6 +368,52 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/adls_nginx')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "udemystracc",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Binary",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileSystem": "nginx"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/udemystracc')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SelfvmServer')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "FileServer",
+				"typeProperties": {
+					"host": "[parameters('SelfvmServer_properties_typeProperties_host')]",
+					"userId": "[parameters('SelfvmServer_properties_typeProperties_userId')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('SelfvmServer_password')]"
+					}
+				},
+				"connectVia": {
+					"referenceName": "customVMRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/customVMRuntime')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/db_UdemyDP203')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -366,6 +434,28 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/AzureKeyVault')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AccessLogNginx')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "SelfvmServer",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Binary",
+				"typeProperties": {
+					"location": {
+						"type": "FileServerLocation",
+						"fileName": "access.log"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/SelfvmServer')]"
 			]
 		},
 		{
@@ -1490,431 +1580,6 @@
 				"[concat(variables('factoryId'), '/datasets/adls_logcsv')]",
 				"[concat(variables('factoryId'), '/datasets/CSVtoParquetLog')]",
 				"[concat(variables('factoryId'), '/datasets/db_UdemyDP203')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/01_dataflow_FactSales')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "tbl_SalesOrderDetail",
-								"type": "DatasetReference"
-							},
-							"name": "SalesOrderDetail"
-						},
-						{
-							"dataset": {
-								"referenceName": "tbl_SalesOrderHeader",
-								"type": "DatasetReference"
-							},
-							"name": "SalesOrderHeader"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "tbl_FactSales",
-								"type": "DatasetReference"
-							},
-							"name": "FactSales"
-						}
-					],
-					"transformations": [
-						{
-							"name": "SalesOrderHeaderJoinSalesOrderDetail"
-						},
-						{
-							"name": "selectColumns"
-						},
-						{
-							"name": "DerivedTotalAmount"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          SalesOrderID as integer,",
-						"          SalesOrderDetailID as integer,",
-						"          OrderQty as integer,",
-						"          ProductID as integer,",
-						"          UnitPrice as decimal(19,4),",
-						"          UnitPriceDiscount as decimal(19,4),",
-						"          LineTotal as decimal(38,6),",
-						"          rowguid as string,",
-						"          ModifiedDate as timestamp",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     isolationLevel: 'READ_UNCOMMITTED',",
-						"     format: 'table') ~> SalesOrderDetail",
-						"source(output(",
-						"          SalesOrderID as integer,",
-						"          RevisionNumber as integer,",
-						"          OrderDate as timestamp,",
-						"          DueDate as timestamp,",
-						"          ShipDate as timestamp,",
-						"          Status as integer,",
-						"          OnlineOrderFlag as boolean,",
-						"          SalesOrderNumber as string,",
-						"          PurchaseOrderNumber as string,",
-						"          AccountNumber as string,",
-						"          CustomerID as integer,",
-						"          ShipToAddressID as integer,",
-						"          BillToAddressID as integer,",
-						"          ShipMethod as string,",
-						"          CreditCardApprovalCode as string,",
-						"          SubTotal as decimal(19,4),",
-						"          TaxAmt as decimal(19,4),",
-						"          Freight as decimal(19,4),",
-						"          TotalDue as decimal(19,4),",
-						"          Comment as string,",
-						"          rowguid as string,",
-						"          ModifiedDate as timestamp",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     isolationLevel: 'READ_UNCOMMITTED',",
-						"     format: 'table') ~> SalesOrderHeader",
-						"SalesOrderDetail, SalesOrderHeader join(SalesOrderDetail@SalesOrderID == SalesOrderHeader@SalesOrderID,",
-						"     joinType:'inner',",
-						"     matchType:'exact',",
-						"     ignoreSpaces: false,",
-						"     broadcast: 'auto')~> SalesOrderHeaderJoinSalesOrderDetail",
-						"SalesOrderHeaderJoinSalesOrderDetail select(mapColumn(",
-						"          SalesOrderID = SalesOrderDetail@SalesOrderID,",
-						"          OrderQty,",
-						"          ProductID,",
-						"          UnitPrice,",
-						"          CustomerID,",
-						"          TaxAmt,",
-						"          OrderDate",
-						"     ),",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> selectColumns",
-						"selectColumns derive(TotalAmount = multiply(OrderQty,UnitPrice)) ~> DerivedTotalAmount",
-						"DerivedTotalAmount sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     input(",
-						"          ProductID as integer,",
-						"          SalesOrderID as integer,",
-						"          CustomerID as integer,",
-						"          OrderQty as integer,",
-						"          UnitPrice as decimal(19,4),",
-						"          OrderDate as timestamp,",
-						"          TaxAmt as decimal(19,4),",
-						"          TotalAmount as decimal(19,4)",
-						"     ),",
-						"     deletable:false,",
-						"     insertable:true,",
-						"     updateable:false,",
-						"     upsertable:false,",
-						"     format: 'table',",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     errorHandlingOption: 'stopOnFirstError',",
-						"     mapColumn(",
-						"          ProductID,",
-						"          SalesOrderID,",
-						"          CustomerID,",
-						"          OrderQty,",
-						"          UnitPrice,",
-						"          OrderDate,",
-						"          TaxAmt,",
-						"          TotalAmount",
-						"     )) ~> FactSales"
-					]
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/tbl_SalesOrderDetail')]",
-				"[concat(variables('factoryId'), '/datasets/tbl_SalesOrderHeader')]",
-				"[concat(variables('factoryId'), '/datasets/tbl_FactSales')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/02_dataflow1_DimCustomer')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "adls_Customer1CSV",
-								"type": "DatasetReference"
-							},
-							"name": "CustomerTbl"
-						},
-						{
-							"dataset": {
-								"referenceName": "tbl_DimCustomer",
-								"type": "DatasetReference"
-							},
-							"name": "GetMaxCustomerSK"
-						},
-						{
-							"dataset": {
-								"referenceName": "tbl_DimCustomer",
-								"type": "DatasetReference"
-							},
-							"name": "DimCustomerLatest"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "tbl_DimCustomer",
-								"type": "DatasetReference"
-							},
-							"name": "DimCustomer"
-						},
-						{
-							"name": "CustomerSKSink"
-						}
-					],
-					"transformations": [
-						{
-							"name": "selectCustomerCols"
-						},
-						{
-							"name": "CustomerSK"
-						},
-						{
-							"name": "CustomerSKUpdated"
-						},
-						{
-							"name": "DowsCustomerExists"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          CustomerID as string,",
-						"          NameStyle as string,",
-						"          Title as string,",
-						"          FirstName as string,",
-						"          MiddleName as string,",
-						"          LastName as string,",
-						"          Suffix as string,",
-						"          CompanyName as string,",
-						"          SalesPerson as string,",
-						"          EmailAddress as string,",
-						"          Phone as string,",
-						"          PasswordHash as string,",
-						"          PasswordSalt as string,",
-						"          rowguid as string,",
-						"          ModifiedDate as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> CustomerTbl",
-						"source(output(",
-						"          CustomeSK as integer",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     isolationLevel: 'READ_UNCOMMITTED',",
-						"     query: 'SELECT MAX([CustomeSK]) as CustomeSK FROM [dbo].[DimCustomer]',",
-						"     format: 'query') ~> GetMaxCustomerSK",
-						"source(output(",
-						"          CustomeSK as integer,",
-						"          CustomerID as integer,",
-						"          CompanyName as string,",
-						"          SalesPerson as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     isolationLevel: 'READ_UNCOMMITTED',",
-						"     format: 'table') ~> DimCustomerLatest",
-						"DowsCustomerExists select(mapColumn(",
-						"          CustomerID,",
-						"          CompanyName,",
-						"          SalesPerson",
-						"     ),",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> selectCustomerCols",
-						"selectCustomerCols keyGenerate(output(CustomeSK as long),",
-						"     startAt: 1L,",
-						"     stepValue: 1L) ~> CustomerSK",
-						"CustomerSK derive(CustomeSK = CustomeSK + CustomerSKSink#outputs()[1].CustomeSK) ~> CustomerSKUpdated",
-						"CustomerTbl, DimCustomerLatest exists(toInteger(CustomerTbl@CustomerID) == DimCustomerLatest@CustomerID,",
-						"     negate:true,",
-						"     broadcast: 'auto')~> DowsCustomerExists",
-						"CustomerSKUpdated sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     input(",
-						"          CustomeSK as integer,",
-						"          CustomerID as integer,",
-						"          CompanyName as string,",
-						"          SalesPerson as string",
-						"     ),",
-						"     deletable:false,",
-						"     insertable:true,",
-						"     updateable:false,",
-						"     upsertable:false,",
-						"     format: 'table',",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     errorHandlingOption: 'stopOnFirstError',",
-						"     mapColumn(",
-						"          CustomeSK,",
-						"          CustomerID,",
-						"          CompanyName,",
-						"          SalesPerson",
-						"     )) ~> DimCustomer",
-						"GetMaxCustomerSK sink(validateSchema: false,",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     store: 'cache',",
-						"     format: 'inline',",
-						"     output: false,",
-						"     saveOrder: 1,",
-						"     mapColumn(",
-						"          CustomeSK",
-						"     )) ~> CustomerSKSink"
-					]
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/adls_Customer1CSV')]",
-				"[concat(variables('factoryId'), '/datasets/tbl_DimCustomer')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/03_dataflow_ProcessCustomerJsonArray')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "CustomerJson",
-								"type": "DatasetReference"
-							},
-							"name": "Customer"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "tbl_Customercourse",
-								"type": "DatasetReference"
-							},
-							"name": "CustomerCourse"
-						}
-					],
-					"transformations": [
-						{
-							"name": "flattenCoursesArray"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          customerid as integer,",
-						"          customername as string,",
-						"          registered as boolean,",
-						"          courses as string[],",
-						"          details as (mobile as string, city as string)",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false,",
-						"     documentForm: 'arrayOfDocuments') ~> Customer",
-						"Customer foldDown(unroll(courses, courses),",
-						"     mapColumn(",
-						"          courses,",
-						"          customerid,",
-						"          customername,",
-						"          registered,",
-						"          mobile = details.mobile,",
-						"          city = details.city",
-						"     ),",
-						"     skipDuplicateMapInputs: false,",
-						"     skipDuplicateMapOutputs: false) ~> flattenCoursesArray",
-						"flattenCoursesArray sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     input(",
-						"          CustomerID as integer,",
-						"          CustomerName as string,",
-						"          Registered as boolean,",
-						"          Courses as string,",
-						"          Mobile as string,",
-						"          City as string",
-						"     ),",
-						"     deletable:false,",
-						"     insertable:true,",
-						"     updateable:false,",
-						"     upsertable:false,",
-						"     format: 'table',",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     errorHandlingOption: 'stopOnFirstError',",
-						"     mapColumn(",
-						"          CustomerID = customerid,",
-						"          CustomerName = customername,",
-						"          Registered = registered,",
-						"          Courses = courses,",
-						"          Mobile = mobile,",
-						"          City = city",
-						"     )) ~> CustomerCourse"
-					]
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/CustomerJson')]",
-				"[concat(variables('factoryId'), '/datasets/tbl_Customercourse')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/MappingDataFlow-CustomerCourses')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "dtfCustomerCourses",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "03_dataflow_ProcessCustomerJsonArray",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"Customer": {},
-									"CustomerCourse": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/03_dataflow_ProcessCustomerJsonArray')]"
 			]
 		}
 	]
