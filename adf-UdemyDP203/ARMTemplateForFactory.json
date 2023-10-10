@@ -846,6 +846,43 @@
 								"parameters": {}
 							}
 						]
+					},
+					{
+						"name": "AccessLogtoSQL",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "CopyLogdataFromNginx",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "04_dataflow_nginx",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"nginxLogFile": {},
+									"sink1": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
 					}
 				],
 				"policy": {
@@ -855,7 +892,8 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/AccessLogNginx')]",
-				"[concat(variables('factoryId'), '/datasets/adls_nginx')]"
+				"[concat(variables('factoryId'), '/datasets/adls_nginx')]",
+				"[concat(variables('factoryId'), '/dataflows/04_dataflow_nginx')]"
 			]
 		},
 		{
