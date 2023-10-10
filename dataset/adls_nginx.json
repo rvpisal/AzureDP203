@@ -1,0 +1,17 @@
+{
+	"name": "adls_nginx",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "udemystracc",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileSystem": "nginx"
+			}
+		}
+	}
+}

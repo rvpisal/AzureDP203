@@ -1,0 +1,17 @@
+{
+	"name": "AccessLogNginx",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "SelfvmServer",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "FileServerLocation",
+				"fileName": "access.log"
+			}
+		}
+	}
+}
