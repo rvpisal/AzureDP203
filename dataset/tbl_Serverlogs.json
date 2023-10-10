@@ -1,0 +1,39 @@
+{
+	"name": "tbl_Serverlogs",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "db_UdemyDP203",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "Remote_addr",
+				"type": "varchar"
+			},
+			{
+				"name": "Time_local",
+				"type": "varchar"
+			},
+			{
+				"name": "Request",
+				"type": "varchar"
+			},
+			{
+				"name": "Status",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "Bytes",
+				"type": "int",
+				"precision": 10
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "Serverlogs"
+		}
+	}
+}
