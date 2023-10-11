@@ -42,6 +42,48 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/ExecStoredProc')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "GetCustomerDetails",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[dbo].[GetCustomerDetails]",
+							"storedProcedureParameters": {
+								"CustomerID": {
+									"value": "277",
+									"type": "Int32"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "db_UdemyDP203",
+							"type": "LinkedServiceReference"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/db_UdemyDP203')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/MappingDataFlow-CustomerCourses')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -833,7 +875,7 @@
 						}
 					},
 					{
-						"name": "ForEach1",
+						"name": "ForEachFileName",
 						"type": "ForEach",
 						"dependsOn": [
 							{
