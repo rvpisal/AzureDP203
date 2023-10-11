@@ -24,6 +24,7 @@
 					],
 					"storeSettings": {
 						"type": "AzureBlobFSReadSettings",
+						"recursive": true,
 						"enablePartitionDiscovery": false
 					},
 					"formatSettings": {
@@ -32,7 +33,7 @@
 				}
 			},
 			{
-				"name": "ForEach1",
+				"name": "ForEachFileName",
 				"type": "ForEach",
 				"dependsOn": [
 					{
