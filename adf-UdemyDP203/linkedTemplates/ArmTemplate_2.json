@@ -7,7 +7,7 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "adf-UdemyDP203"
 		},
-		"BlobEventTrigger_properties_typeProperties_scope": {
+		"EventBlob_properties_typeProperties_scope": {
 			"type": "string",
 			"defaultValue": "/subscriptions/0544c341-6972-4012-9d69-7de48dc068d4/resourceGroups/rg-Udemy-EastUS2/providers/Microsoft.Storage/storageAccounts/udemystracc"
 		}
@@ -114,7 +114,7 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/BlobEventTrigger')]",
+			"name": "[concat(parameters('factoryName'), '/EventBlob')]",
 			"type": "Microsoft.DataFactory/factories/triggers",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -131,9 +131,9 @@
 				],
 				"type": "BlobEventsTrigger",
 				"typeProperties": {
-					"blobPathBeginsWith": "/storagemetriclogs/blobs/PT1H",
-					"ignoreEmptyBlobs": true,
-					"scope": "[parameters('BlobEventTrigger_properties_typeProperties_scope')]",
+					"blobPathBeginsWith": "/storagemetriclogs/blobs/PT1H-2",
+					"ignoreEmptyBlobs": false,
+					"scope": "[parameters('EventBlob_properties_typeProperties_scope')]",
 					"events": [
 						"Microsoft.Storage.BlobCreated"
 					]

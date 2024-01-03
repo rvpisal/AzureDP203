@@ -36,7 +36,7 @@
 			"type": "string",
 			"defaultValue": "https://udemystracc.dfs.core.windows.net/"
 		},
-		"BlobEventTrigger_properties_typeProperties_scope": {
+		"EventBlob_properties_typeProperties_scope": {
 			"type": "string",
 			"defaultValue": "/subscriptions/0544c341-6972-4012-9d69-7de48dc068d4/resourceGroups/rg-Udemy-EastUS2/providers/Microsoft.Storage/storageAccounts/udemystracc"
 		},
@@ -126,8 +126,8 @@
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
 					},
-					"BlobEventTrigger_properties_typeProperties_scope": {
-						"value": "[parameters('BlobEventTrigger_properties_typeProperties_scope')]"
+					"EventBlob_properties_typeProperties_scope": {
+						"value": "[parameters('EventBlob_properties_typeProperties_scope')]"
 					}
 				}
 			},
