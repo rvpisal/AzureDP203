@@ -35,6 +35,10 @@
 		"udemystracc_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://udemystracc.dfs.core.windows.net/"
+		},
+		"BlobEventTrigger_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/0544c341-6972-4012-9d69-7de48dc068d4/resourceGroups/rg-Udemy-EastUS2/providers/Microsoft.Storage/storageAccounts/udemystracc"
 		}
 	},
 	"variables": {
@@ -76,6 +80,92 @@
 							},
 							"traceLevel": "Fine"
 						}
+					},
+					{
+						"name": "Copy data to DB",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "Data flow1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "JsonSource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"wildcardFileName": "*.json",
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "JsonReadSettings"
+								}
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"writeBehavior": "insert",
+								"sqlWriterUseTableLock": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"path": "$['average']"
+										},
+										"sink": {
+											"name": "Average",
+											"type": "Decimal"
+										}
+									},
+									{
+										"source": {
+											"path": "$['time']"
+										},
+										"sink": {
+											"name": "Metrictime",
+											"type": "DateTime"
+										}
+									},
+									{
+										"source": {
+											"path": "$['metricName']"
+										},
+										"sink": {
+											"name": "MetricName",
+											"type": "String"
+										}
+									}
+								]
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "storagemetriclogsoutput",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "tbl_WebMetrics2",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
 					}
 				],
 				"policy": {
@@ -84,7 +174,9 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/df_storage_logs')]"
+				"[concat(variables('factoryId'), '/dataflows/df_storage_logs')]",
+				"[concat(variables('factoryId'), '/datasets/storagemetriclogsoutput')]",
+				"[concat(variables('factoryId'), '/datasets/tbl_WebMetrics2')]"
 			]
 		},
 		{
@@ -2590,6 +2682,36 @@
 				}
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/BlobEventTrigger')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Stopped",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "DF-Storage-logs",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "BlobEventsTrigger",
+				"typeProperties": {
+					"blobPathBeginsWith": "/storagemetriclogs/blobs/PT1H",
+					"ignoreEmptyBlobs": true,
+					"scope": "[parameters('BlobEventTrigger_properties_typeProperties_scope')]",
+					"events": [
+						"Microsoft.Storage.BlobCreated"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/DF-Storage-logs')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/customVMRuntime')]",

@@ -25,6 +25,9 @@
 		},
 		"udemystracc_properties_typeProperties_url": {
 			"value": "https://udemystracc.dfs.core.windows.net/"
+		},
+		"BlobEventTrigger_properties_typeProperties_scope": {
+			"value": "/subscriptions/0544c341-6972-4012-9d69-7de48dc068d4/resourceGroups/rg-Udemy-EastUS2/providers/Microsoft.Storage/storageAccounts/udemystracc"
 		}
 	}
 }
