@@ -1,0 +1,24 @@
+{
+	"name": "BlobEventTrigger",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "DF-Storage-logs",
+					"type": "PipelineReference"
+				}
+			}
+		],
+		"type": "BlobEventsTrigger",
+		"typeProperties": {
+			"blobPathBeginsWith": "/storagemetriclogs/blobs/PT1H",
+			"ignoreEmptyBlobs": true,
+			"scope": "/subscriptions/0544c341-6972-4012-9d69-7de48dc068d4/resourceGroups/rg-Udemy-EastUS2/providers/Microsoft.Storage/storageAccounts/udemystracc",
+			"events": [
+				"Microsoft.Storage.BlobCreated"
+			]
+		}
+	}
+}
