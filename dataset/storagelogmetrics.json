@@ -1,0 +1,50 @@
+{
+	"name": "storagelogmetrics",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "udemystracc",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "PT1H-2.json",
+				"fileSystem": "storagemetriclogs"
+			}
+		},
+		"schema": {
+			"type": "object",
+			"properties": {
+				"total": {
+					"type": "integer"
+				},
+				"minimum": {
+					"type": "integer"
+				},
+				"maximum": {
+					"type": "integer"
+				},
+				"average": {
+					"type": "integer"
+				},
+				"resourceId": {
+					"type": "string"
+				},
+				"time": {
+					"type": "string"
+				},
+				"metricName": {
+					"type": "string"
+				},
+				"timeGrain": {
+					"type": "string"
+				},
+				"count": {
+					"type": "integer"
+				}
+			}
+		}
+	}
+}
