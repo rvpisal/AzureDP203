@@ -8,9 +8,9 @@
 
 # COMMAND ----------
 
-client_id = "9a7827a5-bb6c-484e-b185-bbfe90406acf"
-tenant_id = "e5bc154a-c8ec-4634-bddb-b6d7d2bb2663"
-client_secret = "jBO8Q~PhYdsi45HRBi~MEcy43OkpcYQMdQEitb1a"
+client_id = dbutils.secrets.get(scope = "kv-UdemyDP203", key = "sp-client-id")
+tenant_id = dbutils.secrets.get(scope = "kv-UdemyDP203", key = "sp-tenant-id")
+client_secret = dbutils.secrets.get(scope = "kv-UdemyDP203", key = "sp-client-secret")
 
 # COMMAND ----------
 

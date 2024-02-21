@@ -7,8 +7,12 @@
 
 # COMMAND ----------
 
+access_key = dbutils.secrets.get(scope = "kv-UdemyDP203", key = "udemystracc-access-key")
+
+# COMMAND ----------
+
 spark.conf.set("fs.azure.account.key.udemystracc.dfs.core.windows.net",
-               "U6l/jpFNToRfezjfXNRwgUrFSKMFzMbQqqODLms2elWHO+yVm+sdQspU9wxkD6aJhpgNyn/jUo5u+AStTszvKQ==")
+               access_key)
 
 # COMMAND ----------
 
